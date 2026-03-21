@@ -1,0 +1,401 @@
+================================================================================
+        MULTI-MODAL DOCUMENT INTELLIGENCE PROJECT - OVERVIEW
+================================================================================
+
+PROJECT NAME: Multi-Modal Document Intelligence
+
+PROJECT DESCRIPTION:
+This is an AI-powered chatbot application that understands and answers questions
+about PDF documents. It's like having a smart assistant that reads your documents
+and can answer any questions you ask about them using intelligent AI.
+
+KEY FEATURES:
+- Upload and process PDF documents (text, images, contact information)
+- Ask questions about your documents and get intelligent answers
+- Remembers past conversations (short-term and long-term memory)
+- Uses advanced AI models to understand both general knowledge and document content
+- Creates separate chat sessions for different conversations
+- Beautiful web interface built with Streamlit (like ChatGPT style)
+
+================================================================================
+                            HOW IT WORKS OVERALL
+================================================================================
+
+WORKFLOW:
+1. User uploads a PDF document
+2. System extracts text, images, and contact info from PDF
+3. Content is split into chunks and stored in a vector database
+4. User types a question in the chat interface
+5. AI decides: Should I answer from the document or from general knowledge?
+6. AI retrieves relevant document sections if needed
+7. AI generates an answer and remembers the conversation
+8. Answer is displayed to the user
+
+================================================================================
+                        DETAILED FILE EXPLANATIONS
+================================================================================
+
+ROOT LEVEL FILES:
+================================================================================
+
+1. requirements.txt
+   - Lists all Python packages needed to run the application
+   - Includes: streamlit, langchain, langgraph, chromadb, etc.
+   - Install these with: pip install -r requirements.txt
+   
+2. run.bat (Windows batch file)
+   - Simple launcher script for Windows users
+   - Installs requirements automatically
+   - Starts the Streamlit web application
+   - Just double-click to run the app
+   
+3. debug_env.py (Debugging utility)
+   - Helps check if required packages are installed correctly
+   - Verifies PyMuPDF (fitz) and Streamlit are working
+   - Useful for troubleshooting
+   
+4. diagnose.py (Diagnostic utility)
+   - Tests if all key dependencies work properly
+   - Checks PyMuPDF, sentence-transformers, and ChromaDB
+   - Helps identify missing or broken packages
+   - Useful for setup validation
+
+
+SRC FOLDER (Main Application Code):
+================================================================================
+
+1. app.py (Main Application Interface)
+   PURPOSE: The web interface - what users see and interact with
+   
+   WHAT IT DOES:
+   - Creates a ChatGPT-style interface using Streamlit
+   - Shows a sidebar with list of past conversations (sessions)
+   - Displays chat messages in a nice format
+   - Allows users to type questions
+   - Manages session switching and creation
+   - Handles PDF file uploads
+   - Provides buttons to delete conversations
+   
+   KEY COMPONENTS:
+   - Page configuration (title, layout, styling)
+   - Dark theme CSS styling (looks like ChatGPT)
+   - Session list management (sidebar)
+   - Chat message display
+   - PDF upload handling
+   - New chat creation
+   
+
+2. graph.py (The Brain - Decision Making)
+   PURPOSE: The core AI workflow engine using LangGraph
+   
+   WHAT IT DOES:
+   - Creates an intelligent decision-making pipeline
+   - Decides when to use document search vs general knowledge
+   - Routes queries to appropriate response functions
+   - Manages conversation flow
+   
+   HOW IT WORKS (The Flow):
+   START
+     ↓
+   Router Node: LLM reads your question and decides:
+     ├─ "This needs document info" → Go to RAG path
+     └─ "This is general knowledge" → Go to General path
+     ↓
+   [Two parallel paths]
+   ├─ RAG Path: Search documents for answer
+   └─ General Path: Use AI general knowledge
+     ↓
+   Save Memory: Store conversation in memory
+     ↓
+   END
+   
+   USES:
+   - Groq API (fast LLM provider)
+   - llama-3.1-8b-instant model for routing decisions
+   - VectorStore for document search
+   - MemoryManager to remember conversations
+
+
+3. ingest.py (PDF Processing)
+   PURPOSE: Reads PDF files and extracts useful information
+   
+   WHAT IT DOES:
+   - Opens and reads PDF documents
+   - Extracts text from each page
+   - Extracts images from PDFs
+   - Finds contact information (phone, email, LinkedIn)
+   - Splits large text into smaller chunks (preserves context)
+   - Generates descriptions for images using AI vision
+   - Prepares content for storage in vector database
+   
+   HOW TEXT CHUNKING WORKS:
+   - Breaks large documents into 500-character pieces
+   - Each piece overlaps with previous one by 100 characters
+   - Overlap preserves context so answers make sense
+   
+   EXAMPLE:
+   Original: "This is a very long document text..."
+   Chunk 1: "This is a very long document text that needs to..." (500 chars)
+   Chunk 2: "long document text that needs to be split into..." (500 chars, overlaps)
+   
+   IMAGE HANDLING:
+   - Extracts images from PDFs
+   - Uses AI vision (llama-3.2-11b-vision) to describe images
+   - Stores descriptions as text for searching
+
+
+4. vector_store.py (Document Storage)
+   PURPOSE: Manages a database of document chunks for fast searching
+   
+   WHAT IT DOES:
+   - Stores all document chunks in ChromaDB (vector database)
+   - Converts text to numerical vectors (embeddings)
+   - Allows fast similarity search to find relevant documents
+   - Persists data so documents stay stored between sessions
+   
+   HOW IT WORKS:
+   - Uses "all-MiniLM-L6-v2" model to convert text to vectors
+   - Each piece of text becomes a list of 384 numbers
+   - Similar content has similar number patterns
+   - When you search, it finds closest numerical matches
+   
+   EXAMPLE:
+   "What is Python?" → Converts to: [0.23, -0.45, 0.78, ...]
+   Document: "Python is a programming language" → [0.25, -0.43, 0.80, ...]
+   These are similar numbers, so document is returned in search!
+   
+   KEY METHODS:
+   - add_documents(): Store PDF chunks
+   - search(): Find relevant chunks for a query
+   - clear_collection(): Delete all stored documents
+
+
+5. rag.py (Response Generation)
+   PURPOSE: Contains helper functions for generating answers
+   
+   WHAT IT DOES:
+   - rag_answer(): Generates answers using document context
+     * Takes your question and relevant document sections
+     * Asks LLM to answer ONLY from the document
+     * Cites page numbers in responses
+     * Refuses to answer if info isn't in documents
+   
+   - general_answer(): Generates answers from general knowledge
+     * Takes your question
+     * Asks LLM to answer using its general knowledge
+     * No document restrictions
+     * Can be creative and contextual
+   
+   BOTH FUNCTIONS:
+   - Use Groq API for fast responses
+   - Include conversation memory in their context
+   - Use llama-3.3-70b-versatile model
+   - Have different temperature settings:
+     * RAG: 0.1 (very strict, factual)
+     * General: 0.3 (slightly more creative)
+
+
+6. memory.py (Conversation Memory)
+   PURPOSE: Remembers conversations so the AI can maintain context
+   
+   WHAT IT DOES:
+   - Stores SHORT-TERM memory: Last 10 conversations in current session
+     * Keeps track of what was discussed
+     * Helps AI understand context
+     * Stored in RAM during session
+   
+   - Stores LONG-TERM memory: Important facts extracted from all sessions
+     * Extracts key facts using AI
+     * Persists to file (global_facts.json)
+     * Available across all conversations
+   
+   HOW IT WORKS:
+   - Session-based structure:
+     * Each chat session gets a unique ID folder
+     * Stores conversation history in history.json
+     * Stores important facts in long_term.json
+     * Stores session metadata in meta.json
+   
+   - Global facts:
+     * All sessions contribute to global_facts.json
+     * Important facts about users, documents, etc.
+     * Shared across all conversations
+   
+   EXAMPLE:
+   Conversation 1: "My name is John Smith"
+   → Extracted fact: "User name is John Smith"
+   → Stored in global_facts.json
+   
+   Conversation 2: AI remembers: "Hello John"
+   → Uses the previously extracted fact
+
+
+================================================================================
+                            PROJECT DIRECTORIES
+================================================================================
+
+chat_sessions/ (Conversation History)
+  Purpose: Stores all conversation data
+  Structure:
+  - global_facts.json: Shared facts across all sessions
+  - [session_id]/
+    * history.json: Conversation messages
+    * meta.json: Session name and creation date
+    * long_term.json: Long-term facts for this session
+  
+  Example Session:
+  chat_sessions/
+  ├── global_facts.json
+  ├── 13bbf0c5/
+  │   ├── history.json
+  │   └── meta.json
+  ├── 17f7d579/
+  │   ├── history.json
+  │   ├── long_term.json
+  │   └── meta.json
+
+chroma_db/ (Vector Database)
+  Purpose: Stores document embeddings for fast searching
+  Contents:
+  - chroma.sqlite3: Database file
+  - Multiple folders: Organized vector data
+  
+  What happens:
+  - When you upload a PDF, chunks are converted to vectors
+  - Vectors stored here for fast retrieval
+  - When you search, it finds similar vectors
+  - Persists between sessions
+  
+
+src/ (Application Code)
+  Purpose: Core application logic
+  Contains: All Python files explained above
+
+
+================================================================================
+                        TECHNOLOGY STACK USED
+================================================================================
+
+WEB FRAMEWORK:
+- Streamlit: Creates the user interface (web app)
+
+AI/LLM:
+- LangChain: Framework for building LLM applications
+- LangGraph: For creating workflow graphs/state machines
+- Groq API: Fast LLM inference service
+
+DOCUMENT PROCESSING:
+- PyMuPDF (fitz): Reads PDF files
+- Pillow: Handles images
+- sentence-transformers: Creates text embeddings
+
+STORAGE:
+- ChromaDB: Vector database for storing embeddings
+- JSON files: Local storage for conversations
+
+TEXT & VECTORS:
+- all-MiniLM-L6-v2: Model for converting text to vectors
+
+MODELS USED:
+- llama-3.1-8b-instant: Fast routing decisions
+- llama-3.2-11b-vision: Describing images in PDFs
+- llama-3.3-70b-versatile: Generating answers
+
+
+================================================================================
+                        TYPICAL USER WORKFLOW
+================================================================================
+
+STEP 1: Launch Application
+        → User runs run.bat or streamlit run src/app.py
+        → Web interface opens in browser
+
+STEP 2: Create New Chat
+        → Click "New Chat" button
+        → New session created with unique ID
+        → Empty chat ready
+
+STEP 3: Upload PDF
+        → Click file uploader
+        → Select PDF document
+        → app.py calls ingest.py
+        → PDF processor extracts:
+          - Text chunks
+          - Images
+          - Contact info
+        → vector_store.py stores chunks in ChromaDB
+
+STEP 4: Ask Questions
+        → User types question in chat
+        → graph.py router decides:
+          ├─ Need document? → rag.py searches vector store
+          └─ General knowledge? → rag.py uses AI knowledge
+        → memory.py adds to conversation history
+        → Response displayed to user
+
+STEP 5: Continue Conversation
+        → AI remembers previous messages
+        → memory.py provides context
+        → Each new answer considers past conversation
+        → Long-term facts extracted and saved
+
+STEP 6: Switch Sessions or Delete
+        → Sidebar shows all past conversations
+        → Click to switch sessions
+        → Delete button removes old conversations
+
+
+================================================================================
+                            KEY CONCEPTS
+================================================================================
+
+RAG (Retrieval Augmented Generation):
+  - Fancy term for: "Search documents, then use AI to answer"
+  - Retrieval: Finding relevant document sections
+  - Augmented: Adding that context to the AI
+  - Generation: AI creating the answer using context
+
+Embeddings/Vectors:
+  - Converts text to numbers (384 numbers per sentence)
+  - Similar texts have similar number patterns
+  - Allows fast similarity searching
+
+Session Management:
+  - Each conversation is independent
+  - Own history, memory, documents
+  - Can switch between sessions without losing history
+
+Vector Database:
+  - Like a smart library
+  - Instead of keywords, finds by meaning
+  - "Tell me about Python" finds info on both snakes and programming
+
+
+================================================================================
+                            CONFIGURATION
+================================================================================
+
+ENVIRONMENT VARIABLES (needed in .env file):
+- GROQ_API_KEY: Your API key for Groq (intelligence provider)
+
+SETTINGS IN CODE:
+- Chunk size: 500 characters
+- Chunk overlap: 100 characters
+- Short-term memory: Last 10 conversations
+- LLM temperature: 0.1 (RAG) and 0.3 (General)
+
+
+================================================================================
+                            SUMMARY
+================================================================================
+
+This project creates an intelligent document assistant that:
+1. Reads PDF documents completely (text, images, contacts)
+2. Stores them intelligently in a vector database
+3. Understands when to use document knowledge vs general AI knowledge
+4. Remembers conversations across multiple sessions
+5. Provides a beautiful ChatGPT-like interface
+
+It's a complete end-to-end system for document intelligence with AI.
+
+================================================================================
