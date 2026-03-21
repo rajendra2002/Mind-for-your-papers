@@ -160,4 +160,4 @@ This project is open source and available under the MIT License.
 
 ## Author
 
-Made by [Rajendra](https://github.com/rajendra2002)
+Made by [Rajendra Choudhary](https://github.com/rajendra2002)
