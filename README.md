@@ -1,4 +1,4 @@
-# 🧠 PaperMind — AI-Powered Document Intelligence
+# PaperMind - AI-Powered Document Intelligence
 
 > Upload a PDF, ask anything — get instant intelligent answers powered by AI.
 
@@ -10,49 +10,49 @@
 
 ---
 
-## 📌 What is PaperMind?
+## What is PaperMind?
 
-**PaperMind** is an AI-powered chatbot that reads your PDF documents and answers questions about them in a beautiful ChatGPT-style interface. It can also answer general knowledge questions — just like ChatGPT!
-
----
-
-## ✨ Key Features
-
-- 📄 **Upload PDF documents** — text, images, and contact info extracted automatically
-- 💬 **Chat with your documents** — ask anything and get instant answers
-- 🧠 **Smart routing** — AI decides whether to search the document or use general knowledge
-- 🔁 **Short-term memory** — remembers last 10 messages in current session
-- 💾 **Long-term memory** — extracts and saves important facts across all sessions
-- 🖼️ **Image understanding** — describes images found inside PDFs
-- 🎨 **Beautiful UI** — dark ChatGPT-style interface built with Streamlit
+PaperMind is an AI-powered chatbot that reads your PDF documents and answers questions about them in a beautiful ChatGPT-style interface. It can also answer general knowledge questions just like ChatGPT.
 
 ---
 
-## 🛠️ Tech Stack
+## Key Features
+
+- Upload PDF documents and extract text, images, and contact info automatically
+- Chat with your documents and get instant answers
+- Smart routing — AI decides whether to search the document or use general knowledge
+- Remembers last 10 messages in the current session
+- Extracts and saves important facts across all sessions
+- Describes images found inside PDFs
+- Dark ChatGPT-style interface built with Streamlit
+
+---
+
+## Tech Stack
 
 | Technology | Purpose |
 |-----------|---------|
-| **Streamlit** | Web interface |
-| **LangGraph** | AI workflow & routing |
-| **Groq API** | Fast LLM inference |
-| **ChromaDB** | Vector database |
-| **PyMuPDF** | PDF processing |
-| **Sentence Transformers** | Text embeddings |
-| **LangChain** | LLM framework |
+| Streamlit | Web interface |
+| LangGraph | AI workflow and routing |
+| Groq API | Fast LLM inference |
+| ChromaDB | Vector database |
+| PyMuPDF | PDF processing |
+| Sentence Transformers | Text embeddings |
+| LangChain | LLM framework |
 
 ---
 
-## 🤖 AI Models Used
+## AI Models Used
 
 | Model | Purpose |
 |-------|---------|
-| `llama-3.1-8b-instant` | Routing decisions |
-| `llama-3.2-11b-vision-preview` | Image description |
-| `llama-3.3-70b-versatile` | Answer generation |
+| llama-3.1-8b-instant | Routing decisions |
+| llama-3.2-11b-vision-preview | Image description |
+| llama-3.3-70b-versatile | Answer generation |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 PaperMind/
@@ -63,7 +63,7 @@ PaperMind/
 │   ├── ingest.py           # PDF processor
 │   ├── vector_store.py     # ChromaDB vector store
 │   ├── rag.py              # RAG answer generation
-│   ├── memory.py           # Short & long-term memory
+│   ├── memory.py           # Short and long-term memory
 │   └── __init__.py
 │
 ├── chat_sessions/          # Saved conversation history
@@ -77,7 +77,7 @@ PaperMind/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone the repository
 ```bash
@@ -102,18 +102,18 @@ Create a `.env` file in the root folder:
 ```
 GROQ_API_KEY=your_groq_api_key_here
 ```
-> Get your free Groq API key at [console.groq.com](https://console.groq.com)
+Get your free Groq API key at https://console.groq.com
 
 ### 5. Run the app
 ```bash
 streamlit run src/app.py
 ```
 
-The app will open automatically at `http://localhost:8501` 🎉
+The app will open automatically at http://localhost:8501
 
 ---
 
-## 🔄 How It Works
+## How It Works
 
 ```
 User uploads PDF
@@ -125,8 +125,8 @@ vector_store.py stores chunks in ChromaDB
 User asks a question
       ↓
 graph.py routes the query:
-   ├── 📄 Document question → Search ChromaDB → RAG answer
-   └── 🧠 General question → General AI answer
+   ├── Document question → Search ChromaDB → RAG answer
+   └── General question → General AI answer
       ↓
 memory.py saves conversation
       ↓
@@ -135,20 +135,14 @@ Answer displayed in UI
 
 ---
 
-## 🧠 Memory System
+## Memory System
 
-- **Short-term memory** — Keeps last 10 conversation turns in the current session
-- **Long-term memory** — Extracts key facts using AI and saves them to `global_facts.json`, shared across all sessions
-
----
-
-## 🖥️ Screenshots
-
-> Coming soon!
+- Short-term memory keeps the last 10 conversation turns in the current session
+- Long-term memory extracts key facts using AI and saves them to global_facts.json, shared across all sessions
 
 ---
 
-## ⚙️ Troubleshooting
+## Troubleshooting
 
 Run the diagnostic scripts if you face any issues:
 ```bash
@@ -158,12 +152,12 @@ python debug_env.py
 
 ---
 
-## 📄 License
+## License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is open source and available under the MIT License.
 
 ---
 
-## 🙋‍♂️ Author
+## Author
 
-Made with ❤️ by [Rajendra](https://github.com/rajendra2002)
+Made by [Rajendra](https://github.com/rajendra2002)
